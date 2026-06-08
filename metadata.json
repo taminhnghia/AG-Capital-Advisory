@@ -1,0 +1,6 @@
+{
+  "name": "AG Capital Advisory",
+  "description": "Boutique capital and governance advisory firm for ambitious consumer businesses in Vietnam.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

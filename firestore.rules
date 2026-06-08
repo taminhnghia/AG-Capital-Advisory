@@ -1,0 +1,115 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net (Strict Default Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- REUSABLE SECURITY PRIMITIVES ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && 
+             request.auth.token.email == "taminhnghia.com@gmail.com" && 
+             request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- COLLECTION VALIDATION SCHEMAS ---
+
+    function isValidDealSubmission(data) {
+      return data.fullName is string && data.fullName.size() <= 200 &&
+             data.jobTitle is string && data.jobTitle.size() <= 200 &&
+             data.companyName is string && data.companyName.size() <= 200 &&
+             data.businessEmail is string && data.businessEmail.size() <= 200 &&
+             data.capitalSought is string && data.capitalSought.size() <= 200 &&
+             data.revenueSummary is string && data.revenueSummary.size() <= 5000 &&
+             data.useOfFunds is string && data.useOfFunds.size() <= 5000 &&
+             data.businessDescription is string && data.businessDescription.size() <= 10000 &&
+             data.timestamp is string && data.timestamp.size() <= 100;
+    }
+
+    function isValidContactEnquiry(data) {
+      return data.fullName is string && data.fullName.size() <= 200 &&
+             data.company is string && data.company.size() <= 200 &&
+             data.jobTitle is string && data.jobTitle.size() <= 200 &&
+             data.email is string && data.email.size() <= 200 &&
+             data.purpose is string && data.purpose.size() <= 100 &&
+             data.message is string && data.message.size() <= 5000 &&
+             data.timestamp is string && data.timestamp.size() <= 100;
+    }
+
+    function isValidGovernanceDiagnostic(data) {
+      return data.scores is map &&
+             data.scores.ownershipClarity is int && data.scores.ownershipClarity >= 1 && data.scores.ownershipClarity <= 5 &&
+             data.scores.leadershipAccountability is int && data.scores.leadershipAccountability >= 1 && data.scores.leadershipAccountability <= 5 &&
+             data.scores.decisionGovernance is int && data.scores.decisionGovernance >= 1 && data.scores.decisionGovernance <= 5 &&
+             data.scores.reportingFinancialControl is int && data.scores.reportingFinancialControl >= 1 && data.scores.reportingFinancialControl <= 5 &&
+             data.scores.investorReadiness is int && data.scores.investorReadiness >= 1 && data.scores.investorReadiness <= 5 &&
+             data.scores.riskCompliance is int && data.scores.riskCompliance >= 1 && data.scores.riskCompliance <= 5 &&
+             data.percentage is int && data.percentage >= 0 && data.percentage <= 100 &&
+             data.name is string && data.name.size() <= 200 &&
+             data.email is string && data.email.size() <= 200 &&
+             data.company is string && data.company.size() <= 200 &&
+             data.timestamp is string && data.timestamp.size() <= 100;
+    }
+
+    function isValidNewsletterSubscriber(data) {
+      return data.email is string && data.email.size() <= 200 &&
+             data.timestamp is string && data.timestamp.size() <= 100;
+    }
+
+    // --- RULES DEFINITIONS ---
+
+    // 1. DEAL SUBMISSIONS
+    match /dealSubmissions/{id} {
+      allow get: if isAdmin();
+      allow list: if isAdmin();
+      allow create: if isValidId(id) && isValidDealSubmission(incoming());
+      allow update: if false; // Immutable once submitted from client
+      allow delete: if isAdmin();
+    }
+
+    // 2. CONTACT ENQUIRIES
+    match /contactEnquiries/{id} {
+      allow get: if isAdmin();
+      allow list: if isAdmin();
+      allow create: if isValidId(id) && isValidContactEnquiry(incoming());
+      allow update: if false; // Immutable once submitted
+      allow delete: if isAdmin();
+    }
+
+    // 3. GOVERNANCE DIAGNOSTICS
+    match /governanceDiagnostics/{id} {
+      allow get: if isAdmin();
+      allow list: if isAdmin();
+      allow create: if isValidId(id) && isValidGovernanceDiagnostic(incoming());
+      allow update: if false; // Immutable
+      allow delete: if isAdmin();
+    }
+
+    // 4. NEWSLETTER SUBSCRIBERS
+    match /newsletterSubscribers/{id} {
+      allow get: if isAdmin();
+      allow list: if isAdmin();
+      allow create: if isValidId(id) && isValidNewsletterSubscriber(incoming());
+      allow update: if false; // Immutable
+      allow delete: if isAdmin();
+    }
+  }
+}

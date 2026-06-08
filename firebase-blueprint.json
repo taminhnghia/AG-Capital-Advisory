@@ -1,0 +1,96 @@
+{
+  "entities": {
+    "dealSubmission": {
+      "title": "DealSubmission",
+      "description": "Form inputs for submitting a private deal for fundraising advisory review.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Form document identifier" },
+        "fullName": { "type": "string" },
+        "jobTitle": { "type": "string" },
+        "companyName": { "type": "string" },
+        "businessEmail": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "industry": { "type": "string" },
+        "companyStage": { "type": "string" },
+        "revenueSummary": { "type": "string" },
+        "capitalSought": { "type": "string" },
+        "useOfFunds": { "type": "string" },
+        "businessDescription": { "type": "string" },
+        "pitchDeckStatus": { "type": "string" },
+        "interestInGovernance": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["fullName", "jobTitle", "companyName", "businessEmail", "capitalSought", "revenueSummary", "useOfFunds", "businessDescription", "timestamp"]
+    },
+    "contactEnquiry": {
+      "title": "ContactEnquiry",
+      "description": "General or business inquiry submitted through the contact page form.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "fullName": { "type": "string" },
+        "company": { "type": "string" },
+        "jobTitle": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "purpose": { "type": "string" },
+        "message": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["fullName", "company", "jobTitle", "email", "purpose", "message", "timestamp"]
+    },
+    "governanceDiagnostic": {
+      "title": "GovernanceDiagnostic",
+      "description": "Governance capability self-evaluation diagnostic scorecard submission.",
+      "type": "object",
+      "properties": {
+        "scores": {
+          "type": "object",
+          "properties": {
+            "ownershipClarity": { "type": "number" },
+            "leadershipAccountability": { "type": "number" },
+            "decisionGovernance": { "type": "number" },
+            "reportingFinancialControl": { "type": "number" },
+            "investorReadiness": { "type": "number" },
+            "riskCompliance": { "type": "number" }
+          }
+        },
+        "percentage": { "type": "number" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "company": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["scores", "percentage", "name", "email", "company", "timestamp"]
+    },
+    "newsletterSubscriber": {
+      "title": "NewsletterSubscriber",
+      "description": "Email address opted-in to receive capital insights newsletter update deliveries.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["email", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/dealSubmissions/{id}": {
+      "schema": "dealSubmission",
+      "description": "Collection storing funding round deal submissions."
+    },
+    "/contactEnquiries/{id}": {
+      "schema": "contactEnquiry",
+      "description": "Collection storing general professional and business inquiries."
+    },
+    "/governanceDiagnostics/{id}": {
+      "schema": "governanceDiagnostic",
+      "description": "Collection storing self-reported governance readiness reviews."
+    },
+    "/newsletterSubscribers/{id}": {
+      "schema": "newsletterSubscriber",
+      "description": "Collection storing subscriber opt-ins."
+    }
+  }
+}
