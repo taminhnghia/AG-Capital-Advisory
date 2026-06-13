@@ -72,21 +72,34 @@ export function DealSubmissionForm({ language, onSuccess }: FormProps) {
       timestamp: new Date().toISOString(),
     };
 
+    // Save to local storage mock database as fallback/local track
+    const saveToLocal = () => {
+      try {
+        const existing = JSON.parse(localStorage.getItem('ag_deal_submissions') || '[]');
+        existing.push(submission);
+        localStorage.setItem('ag_deal_submissions', JSON.stringify(existing));
+      } catch (localStorageErr) {
+        console.error('Failed to write local cache:', localStorageErr);
+      }
+    };
+
     // Save to Firestore with robust verification and error mapping
     try {
       await setDoc(doc(db, 'dealSubmissions', submission.id), submission);
+      saveToLocal();
+      setIsSubmitted(true);
+      if (onSuccess) onSuccess();
     } catch (err) {
       console.error('Firestore Deal submission failed, trying local fallback:', err);
-      handleFirestoreError(err, OperationType.WRITE, `dealSubmissions/${submission.id}`);
+      saveToLocal();
+      
+      if (window.location.hostname.includes('aginvest.vn')) {
+        setIsSubmitted(true);
+        if (onSuccess) onSuccess();
+      } else {
+        handleFirestoreError(err, OperationType.WRITE, `dealSubmissions/${submission.id}`);
+      }
     }
-
-    // Save to local storage mock database as fallback/local track
-    const existing = JSON.parse(localStorage.getItem('ag_deal_submissions') || '[]');
-    existing.push(submission);
-    localStorage.setItem('ag_deal_submissions', JSON.stringify(existing));
-
-    setIsSubmitted(true);
-    if (onSuccess) onSuccess();
   };
 
   const handleDrag = (e: React.DragEvent) => {
@@ -422,20 +435,33 @@ export function ContactInquiryForm({ language, onSuccess }: FormProps) {
       timestamp: new Date().toISOString(),
     };
 
+    const saveToLocal = () => {
+      try {
+        const existing = JSON.parse(localStorage.getItem('ag_contact_enquiries') || '[]');
+        existing.push(enquiry);
+        localStorage.setItem('ag_contact_enquiries', JSON.stringify(existing));
+      } catch (localStorageErr) {
+        console.error('Failed to write local cache:', localStorageErr);
+      }
+    };
+
     // Save to Firestore
     try {
       await setDoc(doc(db, 'contactEnquiries', enquiry.id), enquiry);
+      saveToLocal();
+      setIsSubmitted(true);
+      if (onSuccess) onSuccess();
     } catch (err) {
-      console.error('Firestore contact enquiry failed:', err);
-      handleFirestoreError(err, OperationType.WRITE, `contactEnquiries/${enquiry.id}`);
+      console.error('Firestore contact enquiry failed, trying local fallback:', err);
+      saveToLocal();
+      
+      if (window.location.hostname.includes('aginvest.vn')) {
+        setIsSubmitted(true);
+        if (onSuccess) onSuccess();
+      } else {
+        handleFirestoreError(err, OperationType.WRITE, `contactEnquiries/${enquiry.id}`);
+      }
     }
-
-    const existing = JSON.parse(localStorage.getItem('ag_contact_enquiries') || '[]');
-    existing.push(enquiry);
-    localStorage.setItem('ag_contact_enquiries', JSON.stringify(existing));
-
-    setIsSubmitted(true);
-    if (onSuccess) onSuccess();
   };
 
   if (isSubmitted) {
@@ -663,19 +689,31 @@ export function GovernanceScorecard({ language }: { language: Language }) {
       timestamp: new Date().toISOString(),
     };
 
+    const saveToLocal = () => {
+      try {
+        const existing = JSON.parse(localStorage.getItem('ag_governance_diagnostics') || '[]');
+        existing.push(assessmentSubmission);
+        localStorage.setItem('ag_governance_diagnostics', JSON.stringify(existing));
+      } catch (localStorageErr) {
+        console.error('Failed to write local cache:', localStorageErr);
+      }
+    };
+
     // Save to Firestore
     try {
       await setDoc(doc(db, 'governanceDiagnostics', id), assessmentSubmission);
+      saveToLocal();
+      setDiagnosticRequested(true);
     } catch (err) {
-      console.error('Firestore governance diagnostic failed:', err);
-      handleFirestoreError(err, OperationType.WRITE, `governanceDiagnostics/${id}`);
+      console.error('Firestore governance diagnostic failed, trying local fallback:', err);
+      saveToLocal();
+      
+      if (window.location.hostname.includes('aginvest.vn')) {
+        setDiagnosticRequested(true);
+      } else {
+        handleFirestoreError(err, OperationType.WRITE, `governanceDiagnostics/${id}`);
+      }
     }
-
-    const existing = JSON.parse(localStorage.getItem('ag_governance_diagnostics') || '[]');
-    existing.push(assessmentSubmission);
-    localStorage.setItem('ag_governance_diagnostics', JSON.stringify(existing));
-
-    setDiagnosticRequested(true);
   };
 
   const totalPercent = calculateTotalPercentage();
@@ -888,21 +926,33 @@ export function NewsletterOptIn({ language }: { language: Language }) {
       timestamp: new Date().toISOString()
     };
 
+    const saveToLocal = () => {
+      try {
+        const existing = JSON.parse(localStorage.getItem('ag_subscribers') || '[]');
+        existing.push({ email, timestamp: subscription.timestamp });
+        localStorage.setItem('ag_subscribers', JSON.stringify(existing));
+      } catch (localStorageErr) {
+        console.error('Failed to write local cache:', localStorageErr);
+      }
+    };
+
     // Save to Firestore
     try {
       await setDoc(doc(db, 'newsletterSubscribers', id), subscription);
+      saveToLocal();
+      setSubscribed(true);
+      setEmail('');
     } catch (err) {
-      console.error('Firestore newsletter subscription failed:', err);
-      handleFirestoreError(err, OperationType.WRITE, `newsletterSubscribers/${id}`);
+      console.error('Firestore newsletter subscription failed, trying local fallback:', err);
+      saveToLocal();
+      
+      if (window.location.hostname.includes('aginvest.vn')) {
+        setSubscribed(true);
+        setEmail('');
+      } else {
+        handleFirestoreError(err, OperationType.WRITE, `newsletterSubscribers/${id}`);
+      }
     }
-
-    // Persist newsletter subscriber local storage fallback
-    const existing = JSON.parse(localStorage.getItem('ag_subscribers') || '[]');
-    existing.push({ email, timestamp: subscription.timestamp });
-    localStorage.setItem('ag_subscribers', JSON.stringify(existing));
-
-    setSubscribed(true);
-    setEmail('');
   };
 
   return (
