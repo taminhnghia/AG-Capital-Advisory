@@ -50,11 +50,17 @@ export function AnimatedCounter({
 }: CounterProps) {
   const [currentVal, setCurrentVal] = useState(0);
   const prefersReducedMotion = useReducedMotion();
+  const onCompleteRef = useRef(onComplete);
+
+  // Keep callback ref up to date
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   useEffect(() => {
     if (prefersReducedMotion) {
       setCurrentVal(end);
-      if (onComplete) onComplete();
+      onCompleteRef.current?.();
       return;
     }
 
@@ -77,7 +83,7 @@ export function AnimatedCounter({
         animationFrameId = window.requestAnimationFrame(step);
       } else {
         setCurrentVal(end);
-        if (onComplete) onComplete();
+        onCompleteRef.current?.();
       }
     };
 
@@ -88,7 +94,7 @@ export function AnimatedCounter({
         window.cancelAnimationFrame(animationFrameId);
       }
     };
-  }, [shouldStart, end, duration, prefersReducedMotion, onComplete]);
+  }, [shouldStart, end, duration, prefersReducedMotion]);
 
   const valueStr = currentVal.toFixed(decimals);
 
